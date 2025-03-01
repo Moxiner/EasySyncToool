@@ -112,6 +112,11 @@ class FileSyncTool(QMainWindow):
             relative_path = os.path.relpath(path, self.source_folder)
             dest = os.path.join(temp_dir, relative_path)
 
+            # 确保目标目录存在
+            dest_dir = os.path.dirname(dest)
+            if not os.path.exists(dest_dir):
+                os.makedirs(dest_dir)
+
             if os.path.isfile(path):
                 shutil.copy2(path, dest)
             elif os.path.isdir(path):
