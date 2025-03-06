@@ -11,6 +11,7 @@ from PyQt5.QtWidgets import (
     QPushButton,
     QVBoxLayout,
     QWidget,
+    QMessageBox,
 )
 from PyQt5.QtCore import Qt
 
@@ -76,7 +77,11 @@ class FileSyncTool(QMainWindow):
                 else:
                     parent.addChild(node)
         except PermissionError:
-            pass
+            QMessageBox.warning(
+                self,
+                "权限错误",
+                f"无法访问 {path}，请确认您有权限访问该文件夹",
+            )
 
     def get_checked_items(self, parent=None, checked_paths=None):
         if checked_paths is None:
@@ -92,12 +97,17 @@ class FileSyncTool(QMainWindow):
         return checked_paths
 
     def export_files(self):
+        if not self.get_checked_items():
+            QMessageBox.warning(self, "错误", "请选择要导出的文件/文件夹")
+            return
         if not self.source_folder:
+            QMessageBox.warning(self, "错误", "请先选择源文件夹")
             return
 
         # 选择目标路径
         target_dir = QFileDialog.getExistingDirectory(self, "选择保存位置")
         if not target_dir:
+            QMessageBox.warning(self, "错误", "请先选择保存位置")
             return
 
         # 创建临时目录（步骤5）
@@ -108,6 +118,7 @@ class FileSyncTool(QMainWindow):
 
         # 复制选中的文件/文件夹
         checked_paths = self.get_checked_items()
+
         for path in checked_paths:
             relative_path = os.path.relpath(path, self.source_folder)
             dest = os.path.join(temp_dir, relative_path)
@@ -131,6 +142,11 @@ class FileSyncTool(QMainWindow):
         # 创建压缩包并删除临时目录
         shutil.make_archive(zip_path, "zip", temp_dir)
         # shutil.rmtree(temp_dir)
+        QMessageBox.information(
+            self,
+            "导出完成",
+            f"导出完成，同步包保存在：{zip_path}.zip",
+        )
 
 
 if __name__ == "__main__":
