@@ -60,11 +60,33 @@ class FileSyncTool(QMainWindow):
         root.setText(0, os.path.basename(path))
         root.setData(0, Qt.UserRole, path)
         root.setCheckState(0, Qt.Unchecked)
-        self.add_tree_items(root, path)
+        
+        # 获取目录内容并排序
+        items = os.listdir(path)
+        # 先文件夹后文件排序
+        items = sorted(items, key=lambda x: (not os.path.isdir(os.path.join(path, x)), x))
+        
+        for item in items:
+            item_path = os.path.join(path, item)
+            node = QTreeWidgetItem()
+            node.setText(0, item)
+            node.setData(0, Qt.UserRole, item_path)
+            node.setCheckState(0, Qt.Unchecked)
+
+            if os.path.isdir(item_path):
+                root.addChild(node)
+                self.add_tree_items(node, item_path)
+            else:
+                root.addChild(node)
 
     def add_tree_items(self, parent, path):
         try:
-            for item in os.listdir(path):
+            # 获取目录内容并排序
+            items = os.listdir(path)
+            # 先文件夹后文件排序
+            items = sorted(items, key=lambda x: (not os.path.isdir(os.path.join(path, x)), x))
+            
+            for item in items:
                 item_path = os.path.join(path, item)
                 node = QTreeWidgetItem()
                 node.setText(0, item)
@@ -132,6 +154,11 @@ class FileSyncTool(QMainWindow):
                 shutil.copy2(path, dest)
             elif os.path.isdir(path):
                 shutil.copytree(path, dest)
+
+        # 按照先文件夹后文件排序
+        for root, dirs, files in os.walk(temp_dir):
+            dirs.sort()  # 先对文件夹进行排序
+            files.sort()  # 再对文件进行排序
 
         # 压缩目录
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
