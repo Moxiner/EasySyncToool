@@ -5,58 +5,71 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt
 from PyQt5 import QtCore
 import sys
+from sync import FileSyncTool  # 引入 FileSyncTool 类
+
+from qfluentwidgets import (
+    NavigationItemPosition,
+    MessageBox,
+    setTheme,
+    Theme,
+    MSFluentWindow,
+    NavigationAvatarWidget,
+    qrouter,
+    SubtitleLabel,
+    setFont,
+)
+from qfluentwidgets import FluentIcon as FIF
 
 
-class Widget(QFrame):
-
-    def __init__(self, text: str, parent=None):
-        super().__init__(parent=parent)
-        self.label = SubtitleLabel(text, self)
-        self.hBoxLayout = QHBoxLayout(self)
-
-        setFont(self.label, 24)
-        self.label.setAlignment(Qt.AlignCenter)
-        self.hBoxLayout.addWidget(self.label, 1, Qt.AlignCenter)
-
-        # 必须给子界面设置全局唯一的对象名
-        self.setObjectName(text.replace(" ", "-"))
-
-
-class Window(FluentWindow):
-    """主界面"""
+class Window(MSFluentWindow):
 
     def __init__(self):
         super().__init__()
 
-        # 创建子界面，实际使用时将 Widget 换成自己的子界面
-        self.homeInterface = Widget("Home Interface", self)
-        self.musicInterface = Widget("Music Interface", self)
-        self.videoInterface = Widget("Video Interface", self)
-        self.settingInterface = Widget("Setting Interface", self)
+        # create sub interface
+        self.homeInterface = FileSyncTool()
+        self.homeInterface.setObjectName("homeInterface")  # 设置对象名
 
         self.initNavigation()
         self.initWindow()
 
     def initNavigation(self):
-        self.addSubInterface(self.homeInterface, FIF.HOME, "Home")
-        self.addSubInterface(self.musicInterface, FIF.MUSIC, "Music library")
-        self.addSubInterface(self.videoInterface, FIF.VIDEO, "Video library")
-        self.addSubInterface(
-            self.settingInterface,
-            FIF.SETTING,
-            "Settings",
-            NavigationItemPosition.BOTTOM,
+        self.addSubInterface(self.homeInterface, FIF.HOME, "主页", FIF.HOME_FILL)
+        # self.addSubInterface(self.appInterface, FIF.APPLICATION, "应用")
+        # self.addSubInterface(self.videoInterface, FIF.VIDEO, "视频")
+
+        # self.addSubInterface(
+        #     self.libraryInterface,
+        #     FIF.BOOK_SHELF,
+        #     "库",
+        #     FIF.LIBRARY_FILL,
+        #     NavigationItemPosition.BOTTOM,
+        # )
+
+        # 添加自定义导航组件
+        self.navigationInterface.addItem(
+            routeKey="Help",
+            icon=FIF.HELP,
+            text="帮助",
+            onClick=self.showMessageBox,
+            selectable=False,
+            position=NavigationItemPosition.BOTTOM,
         )
+
+        self.navigationInterface.setCurrentItem(self.homeInterface.objectName())
 
     def initWindow(self):
         self.resize(900, 700)
-        self.setWindowIcon(QIcon(":/qfluentwidgets/images/logo.png"))
-        self.setWindowTitle("PyQt-Fluent-Widgets")
+        # self.setWindowIcon(QIcon(":/qfluentwidgets/images/logo.png"))
+        self.setWindowTitle("EasySyncTools - 文件同步工具")
+
+        desktop = QApplication.desktop().availableGeometry()
+        w, h = desktop.width(), desktop.height()
+        self.move(w // 2 - self.width() // 2, h // 2 - self.height() // 2)
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
     w = Window()
     w.show()
     app.exec()

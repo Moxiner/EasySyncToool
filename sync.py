@@ -5,15 +5,16 @@ from datetime import datetime
 from PyQt5.QtWidgets import (
     QApplication,
     QMainWindow,
-    QTreeWidget,
     QTreeWidgetItem,
     QFileDialog,
-    QPushButton,
     QVBoxLayout,
     QWidget,
     QMessageBox,
+    QHBoxLayout,
 )
 from PyQt5.QtCore import Qt
+
+from qfluentwidgets import TreeWidget, PushButton, PrimaryPushButton
 
 
 class FileSyncTool(QMainWindow):
@@ -27,12 +28,12 @@ class FileSyncTool(QMainWindow):
         self.setGeometry(300, 300, 800, 600)
 
         # 创建组件
-        self.tree = QTreeWidget()
+        self.tree = TreeWidget()
         self.tree.setHeaderLabel("目录结构")
-        self.tree.setSelectionMode(QTreeWidget.ExtendedSelection)
+        self.tree.setSelectionMode(TreeWidget.ExtendedSelection)
 
-        self.btn_select = QPushButton("选择文件夹")
-        self.btn_export = QPushButton("导出同步包")
+        self.btn_select = PushButton("选择文件夹")
+        self.btn_export = PrimaryPushButton("导出同步包")
 
         # 布局
         layout = QVBoxLayout()
@@ -60,12 +61,14 @@ class FileSyncTool(QMainWindow):
         root.setText(0, os.path.basename(path))
         root.setData(0, Qt.UserRole, path)
         root.setCheckState(0, Qt.Unchecked)
-        
+
         # 获取目录内容并排序
         items = os.listdir(path)
         # 先文件夹后文件排序
-        items = sorted(items, key=lambda x: (not os.path.isdir(os.path.join(path, x)), x))
-        
+        items = sorted(
+            items, key=lambda x: (not os.path.isdir(os.path.join(path, x)), x)
+        )
+
         for item in items:
             item_path = os.path.join(path, item)
             node = QTreeWidgetItem()
@@ -84,8 +87,10 @@ class FileSyncTool(QMainWindow):
             # 获取目录内容并排序
             items = os.listdir(path)
             # 先文件夹后文件排序
-            items = sorted(items, key=lambda x: (not os.path.isdir(os.path.join(path, x)), x))
-            
+            items = sorted(
+                items, key=lambda x: (not os.path.isdir(os.path.join(path, x)), x)
+            )
+
             for item in items:
                 item_path = os.path.join(path, item)
                 node = QTreeWidgetItem()
